@@ -1,0 +1,504 @@
+
+# Software Design Document (SDD)
+
+## Automated News Summarizer
+
+---
+
+# 1. Introduction
+
+## 1.1 Purpose
+
+This document describes the **system architecture, design components, and implementation details** of the Automated News Summarizer system.
+
+The system extracts news article content from a URL and generates a concise summary using **Natural Language Processing (NLP)** models.
+
+The design ensures that the system is:
+
+* Modular
+* Scalable
+* Easy to maintain
+* Extendable with new NLP features
+
+---
+
+# 2. System Overview
+
+The Automated News Summarizer follows a **data pipeline architecture** consisting of three main stages:
+
+1. Data Collection (Web Scraping)
+2. Data Processing (Text Extraction & Cleaning)
+3. Insight Generation (AI Summarization)
+
+The system processes news articles and converts long text into meaningful summaries using **Transformer-based models**.
+
+---
+
+# 3. System Architecture
+
+The system follows a **modular architecture** where each component performs a specific task.
+
+```
+          +------------------+
+          |      User        |
+          |  (Input URL)     |
+          +--------+---------+
+                   |
+                   v
+        +----------------------+
+        |   Web Scraper        |
+        | (Requests Library)   |
+        +----------+-----------+
+                   |
+                   v
+        +----------------------+
+        |   HTML Parser        |
+        | (BeautifulSoup)      |
+        +----------+-----------+
+                   |
+                   v
+        +----------------------+
+        |  Text Processing     |
+        |  Cleaning + Combine  |
+        +----------+-----------+
+                   |
+                   v
+        +----------------------+
+        |  NLP Summarization   |
+        | (Transformer Model)  |
+        +----------+-----------+
+                   |
+                   v
+        +----------------------+
+        | Sentiment Analysis   |
+        +----------+-----------+
+                   |
+                   v
+        +----------------------+
+        |   Output Interface   |
+        | Summary + Sentiment  |
+        +----------------------+
+```
+
+---
+
+# 4. System Modules
+
+The system is divided into **five core modules**.
+
+---
+
+# 4.1 Web Scraper Module
+
+## Purpose
+
+Fetch raw HTML content from the provided news article URL.
+
+## Input
+
+Article URL
+
+## Output
+
+Raw HTML page content
+
+## Technologies
+
+* Python requests library
+
+## Process
+
+1. Send HTTP GET request
+2. Receive HTML response
+3. Validate response status
+4. Return HTML text
+
+## Pseudocode
+
+```
+function fetch_article(url):
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        return response.text
+    else:
+        return error
+```
+
+---
+
+# 4.2 HTML Parsing Module
+
+## Purpose
+
+Extract relevant article text while removing unnecessary webpage elements.
+
+## Input
+
+Raw HTML content
+
+## Output
+
+Article text
+
+## Technology
+
+BeautifulSoup
+
+## Process
+
+1. Parse HTML structure
+2. Identify paragraph tags
+3. Extract text
+4. Remove navigation/ads
+5. Combine text into single document
+
+## Pseudocode
+
+```
+function parse_html(html):
+    soup = BeautifulSoup(html)
+    
+    paragraphs = soup.find_all("p")
+    
+    article_text = ""
+    
+    for p in paragraphs:
+        article_text += p.text
+        
+    return article_text
+```
+
+---
+
+# 4.3 Text Processing Module
+
+## Purpose
+
+Clean and prepare text for NLP model processing.
+
+## Tasks
+
+* Remove extra whitespace
+* Remove HTML artifacts
+* Limit input length
+* Normalize text
+
+## Input
+
+Raw article text
+
+## Output
+
+Cleaned article text
+
+## Example Processing
+
+Before cleaning:
+
+```
+"This is   an article.\n\nWith   multiple spaces."
+```
+
+After cleaning:
+
+```
+"This is an article. With multiple spaces."
+```
+
+---
+
+# 4.4 Summarization Module
+
+## Purpose
+
+Generate a concise summary using a pre-trained NLP model.
+
+## Model Used
+
+BART Transformer
+
+Model:
+
+```
+facebook/bart-large-cnn
+```
+
+## Why BART?
+
+* State-of-the-art for summarization
+* Trained on CNN/DailyMail dataset
+* Good for news content
+
+## Input
+
+Article text
+
+## Output
+
+Summary text
+
+## Technology
+
+HuggingFace Transformers
+
+## Workflow
+
+1. Load summarization pipeline
+2. Tokenize article text
+3. Feed text into transformer
+4. Generate summary
+
+## Pseudocode
+
+```
+function summarize(article_text):
+    
+    summarizer = pipeline("summarization")
+    
+    summary = summarizer(
+        article_text,
+        max_length=150,
+        min_length=50
+    )
+    
+    return summary
+```
+
+---
+
+# 4.5 Sentiment Analysis Module (Optional)
+
+## Purpose
+
+Determine emotional tone of the news article.
+
+## Output Categories
+
+* Positive
+* Neutral
+* Negative
+
+## Technology
+
+HuggingFace Sentiment Model
+
+Example model:
+
+```
+distilbert-base-uncased-finetuned-sst-2-english
+```
+
+## Pseudocode
+
+```
+function sentiment(article_text):
+
+    sentiment_model = pipeline("sentiment-analysis")
+    
+    result = sentiment_model(article_text)
+    
+    return result
+```
+
+---
+
+# 5. Data Flow Diagram (DFD)
+
+```
+User Input URL
+      |
+      v
+Web Scraper
+      |
+      v
+HTML Parser
+      |
+      v
+Text Processing
+      |
+      v
+Summarization Model
+      |
+      v
+Sentiment Analyzer
+      |
+      v
+Display Results
+```
+
+---
+
+# 6. Technology Stack
+
+| Component            | Technology               |
+| -------------------- | ------------------------ |
+| Programming Language | Python                   |
+| HTTP Requests        | requests                 |
+| HTML Parsing         | BeautifulSoup            |
+| NLP Framework        | HuggingFace Transformers |
+| ML Backend           | PyTorch                  |
+| Sentence Processing  | NLTK                     |
+| Frontend (Optional)  | Streamlit                |
+
+---
+
+# 7. Folder Structure
+
+Recommended project structure:
+
+```
+news_summarizer/
+│
+├── main.py
+├── scraper.py
+├── parser.py
+├── summarizer.py
+├── sentiment.py
+│
+├── utils/
+│   └── text_cleaner.py
+│
+├── models/
+│
+├── requirements.txt
+│
+└── README.md
+```
+
+---
+
+# 8. Error Handling
+
+The system must handle:
+
+### Invalid URL
+
+Solution:
+Validate URL before sending request.
+
+### Website Blocking Requests
+
+Solution:
+Add request headers.
+
+```
+headers = {
+ "User-Agent": "Mozilla/5.0"
+}
+```
+
+### JavaScript Heavy Sites
+
+Solution:
+Use Selenium for dynamic rendering.
+
+---
+
+# 9. Performance Considerations
+
+Potential performance bottlenecks:
+
+* Large article size
+* Model loading time
+* Network latency
+
+Optimization strategies:
+
+* Cache models locally
+* Limit input tokens
+* Use GPU acceleration
+
+---
+
+# 10. Security Considerations
+
+Security risks include:
+
+* Malicious URLs
+* HTML injection
+* API abuse
+
+Mitigation:
+
+* URL validation
+* Input sanitization
+* Request timeouts
+
+---
+
+# 11. Future Enhancements
+
+Future improvements may include:
+
+### Multi-Article Summarization
+
+Summarize multiple articles at once.
+
+### RSS Feed Integration
+
+Automatically fetch news articles.
+
+### Multi-language Support
+
+Summarize news in multiple languages.
+
+### News Category Detection
+
+Classify news into categories:
+
+* Technology
+* Politics
+* Sports
+* Business
+
+### Browser Extension
+
+Chrome extension to summarize articles instantly.
+
+---
+
+# 12. Testing Strategy
+
+### Unit Testing
+
+Test each module individually:
+
+* Scraper
+* Parser
+* Summarizer
+
+### Integration Testing
+
+Test entire pipeline:
+
+```
+URL → Summary
+```
+
+### Example Test Case
+
+Input:
+
+```
+BBC article URL
+```
+
+Expected Output:
+
+```
+3–4 sentence summary
+```
+
+---
+
+# 13. Deployment Strategy
+
+Possible deployment methods:
+
+Local CLI tool
+Streamlit web application
+REST API service
+Docker container
+
+---
