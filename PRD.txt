@@ -1,0 +1,296 @@
+
+# Product Requirements Document (PRD)
+
+## Automated News Summarizer
+
+---
+
+# 1. Product Overview
+
+The **Automated News Summarizer** is a Python-based NLP application that extracts news articles from a given URL and generates a concise summary using a pre-trained transformer model.
+
+The system automates the process of reading long news articles by producing **short, meaningful summaries**, allowing users to quickly understand the main points.
+
+The application follows a **data pipeline approach**:
+
+**Data Collection → Data Processing → Insight Generation**
+
+This project introduces real-world skills in:
+
+* Web scraping
+* Text processing
+* Natural Language Processing (NLP)
+* Transformer models
+* API-based ML inference
+
+---
+
+# 2. Problem Statement
+
+Modern news articles are often lengthy and time-consuming to read. Users need a way to quickly extract key insights from articles without reading the entire content.
+
+Current manual summarization requires effort and time. This project solves the problem by automatically:
+
+* Extracting article content
+* Cleaning irrelevant data
+* Generating meaningful summaries
+
+---
+
+# 3. Objectives
+
+The main objectives of this project are:
+
+* Automatically extract article content from news websites
+* Clean and process raw HTML text
+* Generate concise summaries using NLP models
+* Provide users with quick insights from news articles
+
+Secondary objectives:
+
+* Provide sentiment analysis of the article
+* Present summaries in bullet-point format
+* Offer a simple web interface for usability
+
+---
+
+# 4. Target Users
+
+Primary users include:
+
+* Students researching news topics
+* Professionals who want quick news updates
+* Content creators summarizing articles
+* Researchers analyzing news sentiment
+
+---
+
+# 5. Key Features
+
+## 5.1 Article Scraping
+
+The system retrieves article HTML content from a user-provided URL.
+
+**Functions**
+
+* Send HTTP request to webpage
+* Download raw HTML content
+
+**Technology**
+
+* Python requests library
+
+---
+
+## 5.2 Content Parsing
+
+The system removes unnecessary webpage components and extracts only the main article text.
+
+**Functions**
+
+* Remove ads and navigation elements
+* Extract paragraph tags
+* Combine text into a readable article
+
+**Technology**
+
+* BeautifulSoup HTML parser
+
+---
+
+## 5.3 Text Summarization
+
+The cleaned article text is summarized using a transformer-based NLP model.
+
+**Functions**
+
+* Convert long text into concise summary
+* Preserve key information
+* Generate human-readable output
+
+**Technology**
+
+* HuggingFace Transformers
+* Pre-trained model: BART (facebook/bart-large-cnn)
+
+---
+
+## 5.4 Bullet Point Summary
+
+Instead of a long paragraph summary, the output can be formatted as **3–5 bullet points** for better readability.
+
+**Technology**
+
+* NLTK sentence tokenization
+
+---
+
+## 5.5 Sentiment Analysis (Advanced Feature)
+
+The system determines whether the news tone is:
+
+* Positive
+* Neutral
+* Negative
+
+**Technology**
+
+* HuggingFace sentiment-analysis pipeline
+
+---
+
+## 5.6 Web Interface (Optional)
+
+A simple web UI where users can paste a news article link and instantly receive the summary.
+
+**Technology**
+
+* Streamlit
+
+Interface components:
+
+* URL input box
+* "Generate Summary" button
+* Summary display area
+* Sentiment indicator
+
+---
+
+# 6. Functional Requirements
+
+### Input
+
+User provides:
+
+* News article URL
+
+### System Process
+
+1. Fetch webpage HTML
+2. Parse and extract article text
+3. Clean and combine paragraphs
+4. Send text to summarization model
+5. Generate summary
+6. Perform sentiment analysis
+7. Display result
+
+### Output
+
+The system returns:
+
+* Article summary
+* Bullet points
+* Sentiment classification
+
+---
+
+# 7. Non-Functional Requirements
+
+| Requirement | Description                                  |
+| ----------- | -------------------------------------------- |
+| Performance | Summary should generate within 5–10 seconds  |
+| Accuracy    | Summaries should capture main article points |
+| Scalability | System should support multiple URLs          |
+| Reliability | Handle invalid URLs and blocked requests     |
+| Usability   | Simple interface for non-technical users     |
+
+---
+
+# 8. Technical Stack
+
+| Component             | Technology               |
+| --------------------- | ------------------------ |
+| Programming Language  | Python                   |
+| Web Scraping          | Requests                 |
+| HTML Parsing          | BeautifulSoup            |
+| NLP Models            | HuggingFace Transformers |
+| Deep Learning Backend | PyTorch                  |
+| Sentence Processing   | NLTK                     |
+| Web Interface         | Streamlit                |
+
+---
+
+# 9. System Architecture
+
+```
+User Input (Article URL)
+        │
+        ▼
+Web Scraper (Requests)
+        │
+        ▼
+HTML Parser (BeautifulSoup)
+        │
+        ▼
+Text Cleaner
+        │
+        ▼
+Transformer Model (BART)
+        │
+        ▼
+Summary Generator
+        │
+        ▼
+Sentiment Analyzer
+        │
+        ▼
+Output (Summary + Sentiment)
+```
+
+---
+
+# 10. Error Handling
+
+The system must handle the following cases:
+
+* Invalid URL input
+* Website blocking requests (403 error)
+* JavaScript-heavy websites
+* Empty article content
+* Model processing errors
+
+Possible solutions:
+
+* Use request headers
+* Retry mechanism
+* Selenium for dynamic websites
+
+---
+
+# 11. Future Improvements
+
+Possible enhancements include:
+
+* Multi-article summarization
+* RSS news feed integration
+* Topic categorization (politics, sports, tech)
+* Real-time news summarization
+* Multilingual summarization
+* Chrome extension for instant summaries
+* Mobile app interface
+
+---
+
+# 12. Success Metrics
+
+Project success can be measured by:
+
+* Summary generation accuracy
+* Response time
+* User usability feedback
+* Ability to summarize different news websites
+
+---
+
+# 13. Deliverables
+
+The final project should include:
+
+* Python source code
+* Documentation
+* Requirements file
+* Streamlit interface
+* GitHub repository
+* Example outputs
+
+---
