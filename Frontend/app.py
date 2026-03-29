@@ -106,6 +106,7 @@ st.markdown("""
     }
 
     /* Disable Image Maximize Button in Sidebar */
+    [data-testid="stSidebar"] button[aria-label="Fullscreen"],
     [data-testid="stSidebar"] [data-testid="stImage"] button,
     [data-testid="stSidebar"] button[title="View fullscreen"] {
         display: none !important;
