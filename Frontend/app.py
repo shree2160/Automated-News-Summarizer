@@ -103,6 +103,11 @@ st.markdown("""
         transform: translateY(-8px);
         border-color: rgba(139, 92, 246, 0.4);
     }
+
+    /* Disable Image Maximize Button in Sidebar */
+    [data-testid="stSidebar"] button[title="View fullscreen"] {
+        display: none !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
