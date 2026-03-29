@@ -105,6 +105,7 @@ st.markdown("""
     }
 
     /* Disable Image Maximize Button in Sidebar */
+    [data-testid="stSidebar"] [data-testid="stImage"] button,
     [data-testid="stSidebar"] button[title="View fullscreen"] {
         display: none !important;
     }
@@ -113,7 +114,7 @@ st.markdown("""
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.image("https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop", use_container_width=True)
+    st.image("Frontend/futuristic_news_ai_sidebar.png", use_container_width=True)
     st.header("⚙️ Settings")
     
     st.write("**Summary Length**")
