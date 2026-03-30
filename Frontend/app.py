@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import requests
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -136,6 +137,8 @@ with st.sidebar:
             """, unsafe_allow_html=True)
 
 # --- MAIN APP ---
+backend_url = "http://localhost:8000/api/v1/summarize"
+
 st.markdown(f"""
 <div class="header-container">
     <p class="main-header">Automated News Summarizer</p>
@@ -165,52 +168,82 @@ if generate_btn:
         st.error("⚠️ Invalid URL. Must start with http:// or https://")
     else:
         with st.spinner("🔍 ANALYZING RAW DATA STREAM..."):
-            time.sleep(2.0) 
-            
-            mock_article_title = "The Quantum Sovereign: How AI-Driven Central Banking is Redefining Global Economies"
-            if output_format == "Bullet Points":
-                mock_summary = """
-                <ul>
-                    <li><b>Algorithmic Dominance:</b> Autonomous trading systems now account for 85% of global market volume, leading to unprecedented volatility and rapid correction cycles.</li>
-                    <li><b>CBDC Integration:</b> Over 60 central banks are currently testing AI-governed digital currencies to automate fiscal policy and inflation control.</li>
-                    <li><b>Predictive Governance:</b> AI models are now beating human economists in projecting quarterly GDP growth by a margin of 15% through data mining.</li>
-                    <li><b>Systemic Risk:</b> The reliance on black-box algorithms creates a 'correlation trap', where simultaneous liquidations could trigger a flash crash.</li>
-                </ul>
-                """
-            else:
-                 mock_summary = "The Quantum Sovereign represents a new era in central banking, where AI-driven algorithms dictate global economic policy with robotic precision. While these systems offer unparalleled efficiency in inflation control and GDP projection, they introduce systemic risks that human regulators are struggling to understand. The transition to AI-governed digital currencies is already underway in 60 countries, signaling the end of traditional fiscal governance as we know it."
-                 
-            mock_sentiment = "Neutral"
-            mock_confidence = 96.2
-            
-            st.session_state.history.append({
-                "title": mock_article_title,
-                "summary": mock_summary,
-                "sentiment": mock_sentiment,
-                "confidence": mock_confidence,
-                "time": time.strftime("%H:%M:%S")
-            })
+            try:
+                # Prepare request payload
+                payload = {
+                    "url": url_input,
+                    "length": st.session_state.summary_length.lower()
+                }
+                
+                # Call Backend API
+                response = requests.post(backend_url, json=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Extract data from backend response
+                    article_title = data["metadata"]["title"]
+                    sentiment_label = data["sentiment"]["label"]
+                    confidence_score = data["sentiment"]["score"] * 100
+                    
+                    # Formatting logic for Bullet Points vs Paragraph
+                    if output_format == "Bullet Points":
+                        bullets_html = "<ul>"
+                        for bullet in data["summary_bullets"]:
+                            # Basic formatting: first few words bold (if possible)
+                            parts = bullet.split(": ", 1)
+                            if len(parts) > 1:
+                                bullets_html += f"<li><b>{parts[0]}:</b> {parts[1]}</li>"
+                            else:
+                                bullets_html += f"<li>{bullet}</li>"
+                        bullets_html += "</ul>"
+                        final_summary = bullets_html
+                    else:
+                        final_summary = data["summary_paragraph"]
+                    
+                    # Update Session History
+                    st.session_state.history.append({
+                        "title": article_title,
+                        "summary": final_summary,
+                        "sentiment": sentiment_label,
+                        "confidence": round(confidence_score, 1),
+                        "time": time.strftime("%H:%M:%S")
+                    })
+                    
+                    # Use these values for display below
+                    display_title = article_title
+                    display_summary = final_summary
+                    display_sentiment = sentiment_label
+                    display_confidence = round(confidence_score, 1)
+                    
+                else:
+                    st.error(f"❌ Backend Error ({response.status_code}): {response.text}")
+                    st.stop()
+                    
+            except Exception as e:
+                st.error(f"🔌 Connection Failed: Could not reach the AI Engine at {backend_url}. Make sure the backend is running.")
+                st.stop()
             
         st.success("✅ INTELLIGENCE REPORT READY")
         
         st.markdown('<div class="animated-section">', unsafe_allow_html=True)
         st.markdown("---")
-        st.write(f"### 📄 {mock_article_title}")
+        st.write(f"### 📄 {display_title}")
         
         met1, met2, met3 = st.columns(3)
         with met1:
-            emoji = "😊" if mock_sentiment == "Positive" else "😐" if mock_sentiment == "Neutral" else "😟"
+            emoji = "😊" if display_sentiment == "POSITIVE" else "😐" if display_sentiment == "NEUTRAL" else "😟"
             st.markdown(f"""
             <div class="metric-card">
                 <h4 style="color: #94A3B8; margin-top: 0; font-size: 0.9rem; letter-spacing: 2px;">SENTIMENT</h4>
-                <span style="font-size: 1.8rem; font-weight: 700; color: #A855F7;">{emoji} {mock_sentiment}</span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: #A855F7;">{emoji} {display_sentiment}</span>
             </div>
             """, unsafe_allow_html=True)
         with met2:
             st.markdown(f"""
             <div class="metric-card">
                 <h4 style="color: #94A3B8; margin-top: 0; font-size: 0.9rem; letter-spacing: 2px;">AI CONFIDENCE</h4>
-                <span style="font-size: 1.8rem; color: #60A5FA; font-weight: 700;">{mock_confidence}%</span>
+                <span style="font-size: 1.8rem; color: #60A5FA; font-weight: 700;">{display_confidence}%</span>
             </div>
             """, unsafe_allow_html=True)
         with met3:
@@ -222,12 +255,12 @@ if generate_btn:
             """, unsafe_allow_html=True)
             
         st.write("### 📝 Extracted Summary")
-        st.markdown(f'<div class="summary-box" style="background: rgba(15, 23, 42, 0.8); border-left: 6px solid #A855F7; padding: 30px; border-radius: 12px; margin-top: 20px;">{mock_summary}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-box" style="background: rgba(15, 23, 42, 0.8); border-left: 6px solid #A855F7; padding: 30px; border-radius: 12px; margin-top: 20px;">{display_summary}</div>', unsafe_allow_html=True)
         
         st.write("")
         st.download_button(
             label="📥 Download Insight Memo",
-            data=mock_summary.strip(),
+            data=display_summary.strip(),
             file_name="intelligence_report.txt",
             mime="text/plain"
         )

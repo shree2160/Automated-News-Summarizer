@@ -1,0 +1,2 @@
+frontend = streamlit run app.py
+backend = python main.py
