@@ -115,7 +115,7 @@ st.markdown("""
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.image("Frontend/futuristic_news_ai_sidebar.png", use_container_width=True)
+    st.image("futuristic_news_ai_sidebar.png", width="stretch")
     st.header("⚙️ Settings")
     
     st.write("**Summary Length**")

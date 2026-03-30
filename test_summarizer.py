@@ -2,7 +2,7 @@ import requests
 
 url = "http://localhost:8000/api/v1/summarize"
 payload = {
-    "url": "https://www.bbc.com/news/articles/cz905eyjznno",
+    "url": "https://timesofindia.indiatimes.com/city/visakhapatnam/visakhapatnam-horror-navy-technician-kills-woman-dismembers-body-stores-parts-in-fridge/articleshow/129889816.cms",
     "length": "medium"
 }
 
