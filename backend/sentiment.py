@@ -21,8 +21,16 @@ class SentimentAnalyzer:
         result = self._model(truncated_text)[0]
         label = result['label']
         score = result['score']
+        
+        # Heuristic for neutral: if the confidence for POS/NEG is low, call it NEUTRAL
+        # This is a common way to squeeze 3-class sentiment out of binary models
+        if score < 0.75:
+            final_label = "NEUTRAL"
+        else:
+            final_label = label
+            
         return {
-            "label": label,
+            "label": final_label.upper(),
             "score": round(score, 4)
         }
 
