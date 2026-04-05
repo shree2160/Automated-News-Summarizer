@@ -1,0 +1,123 @@
+﻿Frontend\venv_312\Scripts\
+python.exe : 
+INFO:summarizer:Loading 
+summarization model...
+At line:1 char:1
++ Frontend\venv_312\Script
+s\python.exe 
+tmp\test_backend.py > 
+tmp\test_o ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (I  
+  NFO:summarizer...zati   
+ on model...:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+INFO:httpx:HTTP Request: 
+HEAD https://huggingface.c
+o/facebook/bart-large-cnn/
+resolve/main/config.json 
+"HTTP/1.1 307 Temporary 
+Redirect"
+INFO:httpx:HTTP Request: 
+HEAD https://huggingface.c
+o/api/resolve-cache/models
+/facebook/bart-large-cnn/3
+7f520fa929c961707657b28798
+b30c003dd100b/config.json 
+"HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: 
+GET https://huggingface.co
+/api/models/facebook/bart-
+large-cnn "HTTP/1.1 200 
+OK"
+Traceback (most recent 
+call last):
+  File "C:\Users\ADMIN\One
+Drive\Desktop\Project\tmp\
+test_backend.py", line 
+23, in test
+    summarizer_engine.load
+_model()
+  File "C:\Users\ADMIN\One
+Drive\Desktop\Project\back
+end\summarizer.py", line 
+17, in load_model
+    self._model = pipeline
+(model=self._model_name)
+                  ^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\One
+Drive\Desktop\Project\Fron
+tend\venv_312\Lib\site-pac
+kages\transformers\pipelin
+es\__init__.py", line 
+747, in pipeline
+    normalized_task, 
+targeted_task, 
+task_options = 
+check_task(task)
+                          
+                         
+^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\One
+Drive\Desktop\Project\Fron
+tend\venv_312\Lib\site-pac
+kages\transformers\pipelin
+es\__init__.py", line 
+355, in check_task
+    return PIPELINE_REGIST
+RY.check_task(task)
+           ^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMIN\One
+Drive\Desktop\Project\Fron
+tend\venv_312\Lib\site-pac
+kages\transformers\pipelin
+es\base.py", line 1338, 
+in check_task
+    raise 
+KeyError(f"Unknown task 
+{task}, available tasks 
+are {self.get_supported_ta
+sks()}")
+KeyError: "Unknown task 
+summarization, available 
+tasks are ['any-to-any', 
+'audio-classification', 'a
+utomatic-speech-recognitio
+n', 'depth-estimation', 'd
+ocument-question-answering
+', 'feature-extraction', 
+'fill-mask', 
+'image-classification', 'i
+mage-feature-extraction', 
+'image-segmentation', 
+'image-text-to-text', 
+'keypoint-matching', 
+'mask-generation', 'ner', 
+'object-detection', 
+'sentiment-analysis', 'tab
+le-question-answering', 
+'text-classification', 
+'text-generation', 
+'text-to-audio', 
+'text-to-speech', 
+'token-classification', 
+'video-classification', 'z
+ero-shot-audio-classificat
+ion', 'zero-shot-classific
+ation', 'zero-shot-image-c
+lassification', 'zero-shot
+-object-detection']"
+
+--- Starting Summarization Test ---
+Loading Model...
+
+[ERROR] Test Failed: "Unknown task summarization, available tasks are ['any-to-any', 'audio-classification', 'automatic-speech-recognition', 'depth-estimation', 'document-question-answering', 'feature-extraction', 'fill-mask', 'image-classification', 'image-feature-extraction', 'image-segmentation', 'image-text-to-text', 'keypoint-matching', 'mask-generation', 'ner', 'object-detection', 'sentiment-analysis', 'table-question-answering', 'text-classification', 'text-generation', 'text-to-audio', 'text-to-speech', 'token-classification', 'video-classification', 'zero-shot-audio-classification', 'zero-shot-classification', 'zero-shot-image-classification', 'zero-shot-object-detection']"

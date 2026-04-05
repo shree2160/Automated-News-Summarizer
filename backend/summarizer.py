@@ -14,7 +14,7 @@ class SummarizerEngine:
     def load_model(self):
         if self._model is None:
             logger.info("Loading summarization model...")
-            self._model = pipeline("summarization", model=self._model_name)
+            self._model = pipeline(model=self._model_name)
             
             try:
                 sent_tokenize("Test sentence.")
