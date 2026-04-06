@@ -6,4 +6,4 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 pip_out.txt
-temp
+tmp/
