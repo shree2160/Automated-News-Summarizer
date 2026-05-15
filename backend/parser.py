@@ -14,11 +14,19 @@ def parse_html(html_content: str) -> dict:
         "script", "style", "nav", "footer", "header", "form", "aside", "noscript", 
         "iframe", "button", "input", ".ad-container", "#comments", ".social-share",
         ".author-desc", ".author_desc", "#auhtor_widget", "#author_widget", ".authorComment",
-        ".Wh0Gu", ".cdatainfo", ".Wcsek", ".related-stories", ".trending-topics", ".MwN2O"
+        ".Wh0Gu", ".cdatainfo", ".Wcsek", ".related-stories", ".trending-topics", ".MwN2O",
+        ".breadcrumb", ".tags-list", ".share-icons", ".navigation", ".menu-container",
+        ".top-nav", ".sub-nav", ".sidebar", ".mgid-container", ".taboola-container"
     ]
     for sel in noise_selectors:
         for element in soup.select(sel):
             element.decompose()
+            
+    # Remove all links that are likely navigation (contain very short text and are many)
+    for a in soup.find_all('a'):
+        if len(a.text.strip()) < 20 and len(soup.find_all('a')) > 50:
+            # This is a bit aggressive but helps with link-heavy sidebars
+            pass # We'll filter them during text extraction instead
             
     # Title detection
     title_element = soup.select_one("h1.HNMDR") or soup.find("h1")
@@ -38,6 +46,9 @@ def parse_html(html_content: str) -> dict:
             
     # Article extraction - prioritize specialized containers
     article_container = soup.select_one("div._s30J") or \
+                        soup.select_one("div.article_content") or \
+                        soup.select_one("div.main-content") or \
+                        soup.select_one("div.article-body") or \
                         soup.find('article') or \
                         soup.find("main") or \
                         soup.find(id=re.compile(r"article|story|content|main-content", re.IGNORECASE)) or \
@@ -63,11 +74,23 @@ def parse_html(html_content: str) -> dict:
             for block in blocks:
                 txt = clean_text(block)
                 # Filter out short fragments or navigation-like text
-                if len(txt) > 50 and not any(cta in txt.lower() for cta in ["copyright", "rights reserved", "read more", "sign up", "follow us"]):
+                junk_keywords = [
+                    "copyright", "rights reserved", "read more", "sign up", "follow us", 
+                    "subscribe", "newsletter", "sign in", "weather", "today's epaper",
+                    "live tv", "latest news", "trending stories", "hot picks"
+                ]
+                if len(txt) > 60 and not any(cta in txt.lower() for cta in junk_keywords):
                     texts.append(txt)
     
     # Final Fallback: If still nothing, try all <p> in the whole document as a last resort
     if not texts:
+        for p in soup.find_all(['p', 'div', 'span'], class_=re.compile(r"content|text|body", re.IGNORECASE)):
+            txt = clean_text(p.text)
+            if len(txt) > 60 and not any(cta in txt.lower() for cta in ["copyright", "rights reserved", "read more", "sign up", "follow us"]):
+                texts.append(txt)
+                
+    if not texts:
+        # Extreme fallback: just get all paragraphs
         for p in soup.find_all('p'):
             txt = clean_text(p.text)
             if len(txt) > 60: texts.append(txt)

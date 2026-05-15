@@ -42,6 +42,13 @@ class SummarizeResponse(BaseModel):
     original_length: int
     summary_length: int
 
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Pre-loading AI models...")
+    summarizer_engine.load_model()
+    analyzer.load_model()
+    logger.info("Models ready.")
+
 @app.get("/")
 def root_endpoint():
     return {"message": "Automated News Summarizer API is running. Go to /docs for Swagger UI."}
@@ -65,8 +72,12 @@ def summarize_endpoint(req: SummarizeRequest):
     parsed_data = parse_html(html_content)
     article_text = parsed_data.get("text", "")
     
-    if not article_text or len(article_text.strip()) < 50:
-        raise HTTPException(status_code=422, detail="Article content too short or inaccessible.")
+    if not article_text or len(article_text.strip()) < 100:
+        logger.error(f"Content extraction failed or too short for URL: {req.url}")
+        raise HTTPException(
+            status_code=422, 
+            detail=f"Failed to extract enough text from the article (found {len(article_text)} chars). The site might be blocking access or using an unsupported layout."
+        )
         
     original_length = len(article_text.split())
     
@@ -74,8 +85,14 @@ def summarize_endpoint(req: SummarizeRequest):
     try:
         summary_info = summarizer_engine.summarize(article_text, req.length)
     except Exception as e:
-        logger.error(f"Summarizer error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to generate summary.")
+        logger.error(f"Summarizer error for {req.url}: {str(e)}")
+        # Provide a more specific error if it's a known model issue
+        error_msg = str(e)
+        if "index out of range" in error_msg.lower():
+            detail = "The article is too long or complex for the current AI model. Try a shorter version or a different URL."
+        else:
+            detail = f"Summarization failed: {error_msg}"
+        raise HTTPException(status_code=500, detail=detail)
         
     # 4. Sentiment
     try:
