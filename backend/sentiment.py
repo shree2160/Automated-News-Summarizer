@@ -11,7 +11,7 @@ class SentimentAnalyzer:
     def load_model(self):
         if self._model is None:
             logger.info("Loading sentiment analysis model...")
-            self._model = pipeline(model=self._model_name)
+            self._model = pipeline(task="sentiment-analysis", model=self._model_name)
             logger.info("Sentiment model loaded.")
             
     def analyze(self, text: str) -> dict:

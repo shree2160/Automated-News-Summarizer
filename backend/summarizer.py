@@ -14,22 +14,7 @@ class SummarizerEngine:
     def load_model(self):
         if self._model is None:
             logger.info("Loading summarization model...")
-            from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-            
-            # Explicitly load tokenizer and model to ensure max_length is correctly set
-            tokenizer = AutoTokenizer.from_pretrained(self._model_name)
-            model = AutoModelForSeq2SeqLM.from_pretrained(self._model_name)
-            
-            # Force set model_max_length if it's missing or too large
-            if not hasattr(tokenizer, 'model_max_length') or tokenizer.model_max_length > 1024:
-                tokenizer.model_max_length = 1024
-            
-            self._model = pipeline(
-                "summarization", 
-                model=model, 
-                tokenizer=tokenizer,
-                device=-1  # Force CPU to avoid hidden CUDA issues on Windows if not configured
-            )
+            self._model = pipeline(task="summarization", model=self._model_name)
             
             try:
                 sent_tokenize("Test sentence.")
