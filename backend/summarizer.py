@@ -65,8 +65,14 @@ class SummarizerEngine:
             for chunk in chunks:
                 if len(chunk.split()) < 20: continue # Skip very small chunks
                 
-                # For intermediate steps, we use medium settings
-                res = self._model(chunk, min_length=40, max_length=100, truncation=True)
+                # For intermediate steps, we adjust settings based on chunk size
+                chunk_words = len(chunk.split())
+                c_max = min(100, chunk_words // 2 + 10)
+                c_min = min(c_max - 5, 40)
+                if c_min < 10: c_min = 10
+                if c_max <= c_min: c_max = c_min + 10
+                
+                res = self._model(chunk, min_length=c_min, max_length=c_max, truncation=True)
                 intermediate_summaries.append(res[0]['summary_text'])
             
             combined_summary = " ".join(intermediate_summaries)
@@ -84,9 +90,16 @@ class SummarizerEngine:
         else:
             # Single pass summary
             word_count = len(text.split())
-            if word_count < params["min_length"]:
-                min_l = max(10, word_count // 2)
-                max_l = min(params["max_length"], word_count + 20)
+            
+            # Dynamically adjust min/max length based on input size to avoid warnings
+            # and ensure effective summarization
+            if word_count < params["max_length"]:
+                # If input is already short, compress it further
+                max_l = max(params["min_length"], word_count // 2)
+                min_l = min(max_l - 1, params["min_length"] // 2)
+                # Final safety check
+                if min_l < 10: min_l = 10
+                if max_l <= min_l: max_l = min_l + 10
             else:
                 min_l = params["min_length"]
                 max_l = params["max_length"]

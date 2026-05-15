@@ -19,92 +19,178 @@ if 'summary_length' not in st.session_state:
 # --- CUSTOM CSS (Sleek Dark Mode & Headline Aesthetics) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
-    /* Dark Theme Base */
+    /* Premium Dark Theme Base */
     .stApp {
-        background-color: #000000;
+        background: radial-gradient(circle at top, #130b21 0%, #05050A 100%);
         color: #E2E8F0;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
     
     /* Animations */
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(30px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+        50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+        100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
     }
     
     .animated-section {
-        animation: fadeIn 1s ease-out;
+        animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     /* MASSIVE CENTERED HEADLINE */
     .header-container {
         text-align: center;
-        padding: 4rem 1rem;
-        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        padding: 5rem 1rem 3rem;
+        position: relative;
     }
     
+    .header-container::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
     .main-header {
-        font-size: 8rem; /* Ultra Massive Scale */
+        font-size: 4.5rem;
         text-transform: uppercase;
-        font-weight: 900;
-        background: linear-gradient(90deg, #60A5FA, #A855F7, #EC4899);
+        font-weight: 800;
+        background: linear-gradient(135deg, #FFFFFF 0%, #A855F7 50%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
-        line-height: 1.1;
-        letter-spacing: 2px; /* Fixed visibility */
-        filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0px 4px 15px rgba(0,0,0,0.3);
     }
     
     .sub-header {
-        font-size: 1.1rem; /* Reduced size */
+        font-size: 1.2rem;
         color: #94A3B8;
         font-weight: 400;
-        max-width: 850px;
+        max-width: 700px;
         margin: 0 auto;
-        letter-spacing: 2px;
-        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
     }
     
-    /* Custom Bullets */
+    /* Cards & Containers - Glassmorphism */
+    .metric-card {
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    .metric-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        border-color: rgba(168, 85, 247, 0.4);
+        background: rgba(30, 41, 59, 0.7);
+        box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.3);
+    }
+
+    /* Summary Box */
+    .summary-box {
+        background: rgba(15, 23, 42, 0.7) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        border-left: 4px solid #A855F7 !important;
+        padding: 35px !important;
+        border-radius: 16px !important;
+        margin-top: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        font-size: 1.15rem;
+        line-height: 1.8;
+    }
+
     .summary-box ul {
         list-style: none;
         padding-left: 0;
     }
     .summary-box li {
         position: relative;
-        padding-left: 2.5rem;
-        margin-bottom: 20px;
-        color: #E2E8F0;
-        font-size: 1.15rem;
+        padding-left: 2rem;
+        margin-bottom: 16px;
+        color: #F8FAFC;
     }
     .summary-box li::before {
-        content: "⬥";
+        content: "✨";
         position: absolute;
         left: 0;
-        color: #A855F7;
-        font-size: 1.8rem;
-        top: -4px;
-        text-shadow: 0 0 15px rgba(168, 85, 247, 0.8);
-    }
-    
-    /* Cards & Containers */
-    .metric-card {
-        background: rgba(30, 41, 59, 0.6);
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 30px;
-        text-align: center;
-        transition: transform 0.3s;
-    }
-    .metric-card:hover {
-        transform: translateY(-8px);
-        border-color: rgba(139, 92, 246, 0.4);
+        font-size: 1.2rem;
+        top: 2px;
     }
 
+    /* Streamlit Input Enhancements */
+    div[data-baseweb="input"] {
+        background-color: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    div[data-baseweb="input"]:focus-within {
+        border-color: #A855F7;
+        box-shadow: 0 0 0 1px #A855F7;
+    }
+    div[data-baseweb="input"] input {
+        color: white !important;
+        font-size: 1.1rem;
+        padding: 0.8rem;
+    }
+
+    /* Streamlit Button Enhancements */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        animation: pulseGlow 3s infinite;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #7C3AED 0%, #2563EB 100%);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+    }
+    div.stButton > button[kind="secondary"] {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Sidebar Improvements */
+    [data-testid="stSidebar"] {
+        background-color: rgba(10, 15, 26, 0.95);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
     /* Disable Image Maximize Button in Sidebar */
     [data-testid="stSidebar"] button[aria-label="Fullscreen"],
     [data-testid="stSidebar"] [data-testid="stImage"] button,
@@ -147,9 +233,9 @@ with st.sidebar:
 backend_url = "http://localhost:8000/api/v1/summarize"
 
 st.markdown(f"""
-<div class="header-container">
+<div class="header-container animated-section">
     <p class="main-header">Automated News Summarizer</p>
-    <p class="sub-header">DISTILL ANY NEWS SOURCE INTO PURE INTELLIGENCE WITH OUR NEXT-GEN AI ENGINE</p>
+    <p class="sub-header">Distill any news source into actionable intelligence with our next-generation AI engine</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -235,7 +321,7 @@ if generate_btn:
         
         st.markdown('<div class="animated-section">', unsafe_allow_html=True)
         st.markdown("---")
-        st.write(f"### 📄 {display_title}")
+        st.markdown(f'<h3 style="color: #F8FAFC; margin-bottom: 1rem; font-weight: 600;">📄 {display_title}</h3>', unsafe_allow_html=True)
         
         met1, met2, met3 = st.columns(3)
         with met1:
@@ -261,8 +347,8 @@ if generate_btn:
             </div>
             """, unsafe_allow_html=True)
             
-        st.write("### 📝 Extracted Summary")
-        st.markdown(f'<div class="summary-box" style="background: rgba(15, 23, 42, 0.8); border-left: 6px solid #A855F7; padding: 30px; border-radius: 12px; margin-top: 20px;">{display_summary}</div>', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: #F8FAFC; margin-bottom: 1rem; margin-top: 2rem; font-weight: 600;">📝 Extracted Summary</h3>', unsafe_allow_html=True)
+        st.markdown(f'<div class="summary-box">{display_summary}</div>', unsafe_allow_html=True)
         
         st.write("")
         st.download_button(
