@@ -14,181 +14,238 @@ st.set_page_config(
 if 'history' not in st.session_state:
     st.session_state.history = []
 if 'summary_length' not in st.session_state:
-    st.session_state.summary_length = "Medium"
-
-# --- CUSTOM CSS (Sleek Dark Mode & Headline Aesthetics) ---
+    st.session_state.summary_length = "Medium"# --- CUSTOM CSS (Sleek Dark Mode & Headline Aesthetics) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
     /* Premium Dark Theme Base */
     .stApp {
-        background: radial-gradient(circle at top, #130b21 0%, #05050A 100%);
-        color: #E2E8F0;
-        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at top right, #1a0f30 0%, #06060c 60%, #020205 100%);
+        color: #FFFFFF !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    /* Force white text color for all text, paragraphs, labels, and markdowns (except main header) */
+    .stApp p, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6, .stApp div {
+        color: #FFFFFF !important;
+    }
+    
+    /* Exceptions: Keep specific visual colors for key metrics and gradient accents */
+    .stApp h1[style*="background: linear-gradient"],
+    .stApp h1[style*="background: linear-gradient"] * {
+        color: transparent !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    
+    /* Keep metric highlights vibrant colors */
+    .metric-card span {
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+    }
+    
+    /* History card time badge */
+    .history-card small {
+        color: #A78BFA !important;
+    }
+    
+    /* Hide Streamlit default decorations */
+    [data-testid="stHeader"] {
+        background: transparent !important;
+    }
+    header {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
     }
     
     /* Animations */
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
     @keyframes pulseGlow {
         0% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
-        50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); }
         100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+    }
+    @keyframes textGradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     .animated-section {
-        animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     /* MASSIVE CENTERED HEADLINE */
     .header-container {
         text-align: center;
-        padding: 5rem 1rem 3rem;
+        padding: 4rem 1rem 2.5rem;
         position: relative;
     }
     
     .header-container::before {
         content: '';
         position: absolute;
-        top: 0; left: 50%;
+        top: -50px; left: 50%;
         transform: translateX(-50%);
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
         z-index: 0;
         pointer-events: none;
     }
-
+    
     .main-header {
-        font-size: 4.5rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: 4.8rem;
         text-transform: uppercase;
         font-weight: 800;
-        background: linear-gradient(135deg, #FFFFFF 0%, #A855F7 50%, #3B82F6 100%);
+        background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 30%, #6366F1 70%, #3B82F6 100%);
+        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 1rem;
-        line-height: 1.2;
-        letter-spacing: -1px;
+        animation: textGradient 6s ease infinite;
+        margin-bottom: 0.75rem;
+        line-height: 1.1;
+        letter-spacing: -0.5px;
         position: relative;
         z-index: 1;
-        text-shadow: 0px 4px 15px rgba(0,0,0,0.3);
     }
     
     .sub-header {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         color: #94A3B8;
         font-weight: 400;
-        max-width: 700px;
+        max-width: 650px;
         margin: 0 auto;
-        letter-spacing: 0.5px;
+        line-height: 1.6;
+        letter-spacing: 0.2px;
         position: relative;
         z-index: 1;
     }
     
     /* Cards & Containers - Glassmorphism */
     .metric-card {
-        background: rgba(15, 23, 42, 0.5);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 24px;
-        padding: 30px;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 25px;
         text-align: center;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
     }
     .metric-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        border-color: rgba(168, 85, 247, 0.4);
-        background: rgba(30, 41, 59, 0.7);
-        box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.3);
+        transform: translateY(-5px);
+        border-color: rgba(168, 85, 247, 0.3);
+        background: rgba(20, 24, 48, 0.6);
+        box-shadow: 0 20px 40px -15px rgba(139, 92, 246, 0.25);
     }
-
+    
     /* Summary Box */
     .summary-box {
-        background: rgba(15, 23, 42, 0.7) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(168, 85, 247, 0.3) !important;
-        border-left: 4px solid #A855F7 !important;
-        padding: 35px !important;
-        border-radius: 16px !important;
-        margin-top: 20px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        font-size: 1.15rem;
-        line-height: 1.8;
+        background: rgba(15, 23, 42, 0.5) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        border-left: 5px solid #8B5CF6 !important;
+        padding: 30px !important;
+        border-radius: 18px !important;
+        margin-top: 15px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+        font-size: 1.1rem;
+        line-height: 1.85;
+        color: #F8FAFC;
     }
-
+    
     .summary-box ul {
         list-style: none;
         padding-left: 0;
+        margin: 0;
     }
     .summary-box li {
         position: relative;
         padding-left: 2rem;
-        margin-bottom: 16px;
-        color: #F8FAFC;
+        margin-bottom: 14px;
     }
     .summary-box li::before {
         content: "✨";
         position: absolute;
         left: 0;
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         top: 2px;
+        filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
     }
-
+    
     /* Streamlit Input Enhancements */
     div[data-baseweb="input"] {
-        background-color: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        transition: all 0.3s ease;
+        background-color: rgba(15, 23, 42, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        transition: all 0.3s ease !important;
     }
     div[data-baseweb="input"]:focus-within {
-        border-color: #A855F7;
-        box-shadow: 0 0 0 1px #A855F7;
+        border-color: #8B5CF6 !important;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25) !important;
     }
     div[data-baseweb="input"] input {
         color: white !important;
-        font-size: 1.1rem;
-        padding: 0.8rem;
+        font-size: 1.1rem !important;
+        padding: 0.9rem !important;
     }
-
+    
     /* Streamlit Button Enhancements */
     div.stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.6rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        animation: pulseGlow 3s infinite;
+        background: linear-gradient(135deg, #8B5CF6 0%, #4F46E5 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 0.7rem 1.6rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
     }
     div.stButton > button[kind="primary"]:hover {
-        transform: translateY(-2px);
-        background: linear-gradient(135deg, #7C3AED 0%, #2563EB 100%);
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        transform: translateY(-2px) !important;
+        background: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%) !important;
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
     }
     div.stButton > button[kind="secondary"] {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: #E2E8F0 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        padding: 0.7rem 1.6rem !important;
     }
     div.stButton > button[kind="secondary"]:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        transform: translateY(-2px) !important;
+        color: white !important;
     }
-
+    
     /* Sidebar Improvements */
     [data-testid="stSidebar"] {
-        background-color: rgba(10, 15, 26, 0.95);
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: rgba(6, 6, 12, 0.95) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px) !important;
+    }
+    [data-testid="stSidebar"] .stMarkdown h2 {
+        font-family: 'Outfit', sans-serif;
+        color: #FFFFFF !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.5px !important;
+        margin-top: 1rem !important;
     }
     
     /* Disable Image Maximize Button in Sidebar */
@@ -196,6 +253,129 @@ st.markdown("""
     [data-testid="stSidebar"] [data-testid="stImage"] button,
     [data-testid="stSidebar"] button[title="View fullscreen"] {
         display: none !important;
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stImage"] img {
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Target the container of stCheckbox */
+    div[data-testid="stCheckbox"] {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 12px !important;
+        padding: 8px 12px !important;
+        margin-bottom: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+    div[data-testid="stCheckbox"]:hover {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Keep the default layout structure of label */
+    div[data-testid="stCheckbox"] label {
+        display: flex !important;
+        align-items: center !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Format the label text and add margin-left to prevent overlap */
+    div[data-testid="stCheckbox"] label p,
+    div[data-testid="stCheckbox"] label span:last-child {
+        color: #FFFFFF !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important; /* Prevent text wrapping! */
+    }
+    
+    /* Ensure the wrapper text container has a solid offset and does not overlap */
+    div[data-testid="stCheckbox"] label > div:last-child {
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-left: 18px !important; /* Large spacing to separate from switch toggle! */
+    }
+    
+    /* Target the parent span (child 1 of label) and turn it into the sliding track */
+    div[data-testid="stCheckbox"] label > span:first-child,
+    div[data-testid="stCheckbox"] label > div:first-child {
+        width: 36px !important;
+        height: 18px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 100px !important;
+        position: relative !important;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+    }
+    
+    /* Completely hide default checkboxes, checkmark symbols, and nested borders */
+    div[data-testid="stCheckbox"] label svg {
+        display: none !important;
+    }
+    div[data-testid="stCheckbox"] label > span:first-child *,
+    div[data-testid="stCheckbox"] label > div:first-child * {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* Create the sliding toggle knob inside the track */
+    div[data-testid="stCheckbox"] label > span:first-child::after,
+    div[data-testid="stCheckbox"] label > div:first-child::after {
+        content: "" !important;
+        position: absolute !important;
+        top: 2px !important;
+        left: 2px !important;
+        width: 12px !important;
+        height: 12px !important;
+        border-radius: 50% !important;
+        background-color: #94A3B8 !important;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    /* Active Switch State - Change track color and apply a premium glow */
+    div[data-testid="stCheckbox"] label:has(input:checked) > span:first-child,
+    div[data-testid="stCheckbox"] label:has(input:checked) > div:first-child {
+        background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%) !important;
+        border-color: #8B5CF6 !important;
+        box-shadow: 0 0 12px rgba(139, 92, 246, 0.5) !important;
+    }
+    
+    /* Active Switch Knob State - Slide the knob to the right and make it bright white */
+    div[data-testid="stCheckbox"] label:has(input:checked) > span:first-child::after,
+    div[data-testid="stCheckbox"] label:has(input:checked) > div:first-child::after {
+        transform: translateX(16px) !important;
+        background-color: #FFFFFF !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    /* Styled recent history cards */
+    .history-card {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin-bottom: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+    .history-card:hover {
+        background: rgba(139, 92, 246, 0.06) !important;
+        border-color: rgba(139, 92, 246, 0.25) !important;
+        transform: translateY(-2px) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -205,7 +385,7 @@ with st.sidebar:
     st.image("futuristic_news_ai_sidebar.png", width="stretch")
     st.header("⚙️ Settings")
     
-    st.write("**Summary Length**")
+    st.markdown('<p style="color: #FFFFFF; font-weight: 600; margin-bottom: 0.5rem; font-family: \'Plus Jakarta Sans\', sans-serif;">Summary Length</p>', unsafe_allow_html=True)
     def update_length(length):
         st.session_state.summary_length = length
 
@@ -223,9 +403,9 @@ with st.sidebar:
     else:
         for idx, item in enumerate(reversed(st.session_state.history[-5:])):
             st.markdown(f"""
-            <div style="background: rgba(45, 55, 72, 0.4); border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                <small style="color: #94A3B8;">{item['time']}</small><br>
-                <strong style="color: #E2E8F0;">{item['title'][:40]}...</strong>
+            <div class="history-card">
+                <small style="color: #A78BFA; font-weight: 600; letter-spacing: 0.5px;">{item['time']}</small><br>
+                <div style="color: #FFFFFF; font-weight: 600; margin-top: 4px; font-size: 0.9rem; line-height: 1.4;">{item['title'][:40]}...</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -233,14 +413,15 @@ with st.sidebar:
 backend_url = "http://127.0.0.1:8000/api/v1/summarize"
 
 st.markdown(f"""
-<div class="header-container animated-section">
-    <p class="main-header">Automated News Summarizer</p>
-    <p class="sub-header">Distill any news source into actionable intelligence with our next-generation AI engine</p>
+<div style="text-align: center; padding: 4rem 1rem 2.5rem; position: relative;" class="animated-section">
+    <div style="content: ''; position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%); z-index: 0; pointer-events: none;"></div>
+    <h1 style="font-family: 'Outfit', sans-serif; font-size: 3.8rem; text-transform: uppercase; font-weight: 800; background: linear-gradient(135deg, #FFFFFF 0%, #C084FC 30%, #6366F1 70%, #3B82F6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.75rem; line-height: 1.1; letter-spacing: -0.5px; position: relative; z-index: 1; text-align: center;">Automated News Summarizer</h1>
+    <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; color: #FFFFFF; font-weight: 400; max-width: 650px; margin: 0 auto; line-height: 1.6; letter-spacing: 0.2px; position: relative; z-index: 1; text-align: center;">Distill any news source into actionable intelligence with our next-generation AI engine</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Input Section
-st.write("### 📌 Enter Article Details")
+st.markdown('<h3 style="color: #FFFFFF; font-family: \'Outfit\', sans-serif; font-weight: 600; margin-bottom: 0.8rem; font-size: 1.5rem;">📌 Enter Article Details</h3>', unsafe_allow_html=True)
 url_input = st.text_input("News Article URL", placeholder="https://example.com/news-article...", label_visibility="collapsed")
 
 col1, col2, col3 = st.columns([1, 1, 3])
@@ -321,7 +502,7 @@ if generate_btn:
         
         st.markdown('<div class="animated-section">', unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown(f'<h3 style="color: #F8FAFC; margin-bottom: 1rem; font-weight: 600;">📄 {display_title}</h3>', unsafe_allow_html=True)
+        st.markdown(f'<h3 style="color: #F8FAFC; font-family: \'Outfit\', sans-serif; margin-bottom: 1.2rem; font-weight: 700; font-size: 1.8rem; line-height: 1.3;">📄 {display_title}</h3>', unsafe_allow_html=True)
         
         met1, met2, met3 = st.columns(3)
         with met1:
@@ -347,7 +528,7 @@ if generate_btn:
             </div>
             """, unsafe_allow_html=True)
             
-        st.markdown('<h3 style="color: #F8FAFC; margin-bottom: 1rem; margin-top: 2rem; font-weight: 600;">📝 Extracted Summary</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="color: #F8FAFC; font-family: \'Outfit\', sans-serif; margin-bottom: 1.2rem; margin-top: 2.5rem; font-weight: 700; font-size: 1.8rem;">📝 Extracted Summary</h3>', unsafe_allow_html=True)
         st.markdown(f'<div class="summary-box">{display_summary}</div>', unsafe_allow_html=True)
         
         st.write("")
