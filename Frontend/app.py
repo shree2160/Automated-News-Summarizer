@@ -230,7 +230,7 @@ with st.sidebar:
             """, unsafe_allow_html=True)
 
 # --- MAIN APP ---
-backend_url = "http://localhost:8000/api/v1/summarize"
+backend_url = "http://127.0.0.1:8000/api/v1/summarize"
 
 st.markdown(f"""
 <div class="header-container animated-section">
@@ -260,7 +260,7 @@ if generate_btn:
     elif not url_input.startswith(("http://", "https://")):
         st.error("⚠️ Invalid URL. Must start with http:// or https://")
     else:
-        with st.spinner("🔍 ANALYZING RAW DATA STREAM..."):
+        with st.spinner("🔍 ANALYZING RAW DATA STREAM... (This may take up to 60 seconds for long articles)"):
             try:
                 # Prepare request payload
                 payload = {
@@ -268,8 +268,8 @@ if generate_btn:
                     "length": st.session_state.summary_length.lower()
                 }
                 
-                # Call Backend API
-                response = requests.post(backend_url, json=payload, timeout=30)
+                # Call Backend API with extended timeout for CPU processing
+                response = requests.post(backend_url, json=payload, timeout=120)
                 
                 if response.status_code == 200:
                     data = response.json()

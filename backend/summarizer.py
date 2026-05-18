@@ -41,69 +41,94 @@ class SummarizerEngine:
         
         params = length_params.get(length_preference, length_params["medium"])
         
-        # Max input for BART-large-cnn is effectively around 800-1000 words.
-        # We'll use a safer character limit for chunking.
-        max_chunk_chars = 3000 
+        # BART-large-cnn max position is 1024 tokens.
+        # 3000 chars is roughly 600-800 tokens. 
+        # If a single chunk is still too long, truncation=True will now work.
+        max_chunk_chars = 2500 
         
         if len(text) > max_chunk_chars:
             logger.info(f"Article is long ({len(text)} chars). Using multi-stage summarization.")
-            # Split by paragraphs to keep context better than hard character slicing
-            paragraphs = text.split('\n')
+            # Split by paragraphs
+            paragraphs = [p.strip() for p in text.split('\n') if p.strip()]
             chunks = []
             current_chunk = ""
             
             for p in paragraphs:
+                # If adding this paragraph exceeds limit, push current chunk and start new one
                 if len(current_chunk) + len(p) < max_chunk_chars:
-                    current_chunk += p + "\n"
+                    current_chunk += p + " "
                 else:
-                    if current_chunk: chunks.append(current_chunk.strip())
-                    current_chunk = p + "\n"
-            if current_chunk: chunks.append(current_chunk.strip())
+                    if current_chunk:
+                        chunks.append(current_chunk.strip())
+                    # If the paragraph itself is longer than max_chunk_chars, we must slice it
+                    if len(p) > max_chunk_chars:
+                        for i in range(0, len(p), max_chunk_chars):
+                            chunks.append(p[i:i+max_chunk_chars])
+                        current_chunk = ""
+                    else:
+                        current_chunk = p + " "
+            
+            if current_chunk:
+                chunks.append(current_chunk.strip())
             
             # Step 1: Summarize each chunk
             intermediate_summaries = []
             for chunk in chunks:
-                if len(chunk.split()) < 20: continue # Skip very small chunks
+                if len(chunk.split()) < 30: continue 
                 
-                # For intermediate steps, we adjust settings based on chunk size
-                chunk_words = len(chunk.split())
-                c_max = min(100, chunk_words // 2 + 10)
-                c_min = min(c_max - 5, 40)
-                if c_min < 10: c_min = 10
-                if c_max <= c_min: c_max = c_min + 10
-                
-                res = self._model(chunk, min_length=c_min, max_length=c_max, truncation=True)
-                intermediate_summaries.append(res[0]['summary_text'])
+                try:
+                    # For intermediate steps, we adjust settings based on chunk size
+                    chunk_words = len(chunk.split())
+                    c_max = min(100, chunk_words // 2 + 10)
+                    c_min = min(c_max - 5, 40)
+                    if c_min < 10: c_min = 10
+                    if c_max <= c_min: c_max = c_min + 10
+                    
+                    res = self._model(chunk, min_length=c_min, max_length=c_max, truncation=True)
+                    intermediate_summaries.append(res[0]['summary_text'])
+                except Exception as e:
+                    logger.warning(f"Error summarizing chunk: {str(e)}")
+                    continue
             
-            combined_summary = " ".join(intermediate_summaries)
+            if not intermediate_summaries:
+                # Fallback if all chunks failed or were too small
+                combined_summary = text[:max_chunk_chars]
+            else:
+                combined_summary = " ".join(intermediate_summaries)
             
             # Step 2: Final condensation if the combined summary is still too long
-            if len(combined_summary.split()) > params["max_length"]:
-                logger.info("Condensing combined summaries for final output.")
+            # BART has 1024 token limit, so combined_summary shouldn't exceed that if we want a single pass
+            # If combined_summary is > 4000 chars, it might still exceed 1024 tokens.
+            if len(combined_summary) > max_chunk_chars:
+                combined_summary = combined_summary[:max_chunk_chars]
+
+            try:
                 final_res = self._model(combined_summary, 
                                       min_length=params["min_length"], 
                                       max_length=params["max_length"], 
                                       truncation=True)
                 summary_text = final_res[0]['summary_text']
-            else:
-                summary_text = combined_summary
+            except Exception as e:
+                logger.error(f"Error in final condensation: {str(e)}")
+                summary_text = combined_summary[:500] # Very crude fallback
         else:
             # Single pass summary
             word_count = len(text.split())
-            
             # Dynamically adjust min/max length based on input size to avoid warnings
             # and ensure effective summarization
             if word_count < params["max_length"]:
                 # If input is already short, compress it further
                 max_l = max(params["min_length"], word_count // 2)
                 min_l = min(max_l - 1, params["min_length"] // 2)
-                # Final safety check
-                if min_l < 10: min_l = 10
-                if max_l <= min_l: max_l = min_l + 10
             else:
                 min_l = params["min_length"]
                 max_l = params["max_length"]
                 
+            # Final safety check
+            if min_l < 10: 
+                min_l = 10
+            if max_l <= min_l: 
+                max_l = min_l + 10
             summary_result = self._model(text, min_length=min_l, max_length=max_l, truncation=True)
             summary_text = summary_result[0]['summary_text']
             
